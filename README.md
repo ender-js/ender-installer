@@ -1,49 +1,44 @@
-#Ender 1.0 - work in progress - developer notes
+# Ender Installer [![Build Status](https://secure.travis-ci.org/ender-js/ender-installer.png)](http://travis-ci.org/ender-js/ender-installer)
 
-Architecture notes can be found in *lib/README.md*.
+A component of the [Ender CLI](https://github.com/ender-js/Ender/), providing an additional layer on top of Ender's [npm](http://npmjs.org/) wrapper [Ender Repository](https://github.com/ender-js/ender-repository).
 
-This branch won't be deployed to npm until it's ready for a 1.0 release. Use `npm link` to install your local repo as the global *ender* package.
+Installing packages is not as simple as just asking npm to install them, there is additional logic we need in order to get exactly what we want and also to control npm (in particular, npm needs '.' to be installed separately). Our install logic allows us to install more than just the standard package.json "dependencies", we can also install "ender"->"dependencies". We also get to skip installing dependencies that already exist which the npm API doesn't allow us to do directly. The basic flow is: (1) check dependency status in node_modules, (2) ask npm to install anything missing, (3) repeat until there's not left to install. One special case is that we *always* ask npm to install packages specified
+by a path (i.e. local).
 
-What does *ready* mean? We haven't quite pinned that down yet, but we'll get there!
+## Executable
 
-Use `npm install` to install both the dependencies and the devDependencies, otherwise you won't be able to run the executable (in *bin/ender*) or run the tests (using the Makefile).
+If you install with `npm install ender-installer -g` then you'll get an `ender-installer` executable that you can use to install npm packages, the Ender way. Combined with the executable in [Ender Builder](https://github.com/ender-js/ender-builder) you'd have complete Ender install & build tools separate from the main Ender CLI.
 
-Unit tests can be invoked by running a `make` or `make unittests`. Functional tests take longer to run as they check out packages from npm and can be invoked by running a `make functionaltests`. All types of tests can be run with `make alltests`--**this must be done before any pull-request and must all pass**.
+The executable obeys the `--force-install` command; without it, it'll not *reinstall* packages that have already been installed.
 
-Tests use BusterJS, you can read more about it [here](http://busterjs.org/). Buster has integrated support for Sinon for mocking and stubbing, you can read more about it [here](http://sinonjs.org/). Note that Buster is still in Beta and may occasionally break. Bug @augustl or @cjno about that.
 
-Feel free to open an issue on GitHub if you would like to discuss something or want support of some kind. Alternatively you can bug [@rvagg](http://twitter.com/rvagg) on Twitter or via [email](mailto:rod@vagg.org).
+```sh
+$ ender-installer ender-js bonzo bean traversty --force-install
+```
 
-## Some behavioural differences from 0.8.x
+## About Ender
 
-This branch should do everything that the current 0.8.x branch does, with some additions:
+For more information check out [http://ender.jit.su](http://ender.jit.su)
 
- * Some of the output to stdout will be different. Mostly minor wording changes but also the `ender info` output is included in each *build*, *add* and *remove*.
- * Packages are properly ordered (*!!*). Your *ender.js* will contain the packages you requested *in the order you requested them* on the commandline, with any dependencies placed *before* they are required.
- * *bin/ender* now gives proper exit-codes, if there is any kind of error you'll get a `1`, otherwise a `0`.
- * The `"ender"` key in *package.json* supports an array of files to concatenate to form the bridge.
- * A new `--client-lib` argument can be used to specify an alternative to the default *ender-js* package as a client lib. At the moment a client lib still needs to conform to the basics of the `$` + CommonJS pattern in order to support existing Ender packages.
+## API
 
-------------
+### enderInstaller(options, packages, callback)
+Ender Installer exports a single main function that performs the installation. The `options` object can contain a `'force-install'` boolean (i.e. from `--force-install` on the command line) that will force an install from npm even if the package is already installed in *node_modules* (`'_force-install'` is an alternative and is used upstream to indicate that the option shouldn't be saved to the build file's command line string, i.e. `ender refresh` does a `--force-install` but that option isn't left in the build file).
 
-#ENDER [![Build Status](https://secure.travis-ci.org/ender-js/Ender.png)](http://travis-ci.org/ender-js/Ender)
+The `packages` argument is an array of packages to be installed, npm-style so they can contain `@semver`s and even be filesystem paths.
 
-**Ender is a full featured package manager for your browser.**<br/>
-It allows you to search, install, manage, and compile front-end javascript packages and their dependencies for the web. We like to think of it as [NPM](https://github.com/isaacs/npm)'s little sister.
+The `callback` has the signature: `function (err, npmResults, dependencyGraph)` where `npmResults` is an array of results from [Ender Repository](https://github.com/ender-js/ender-repository)'s `install()` function and `dependencyGraph` is a `DependencyGraph` object generated from [Ender Dependency Graph](https://github.com/ender-js/ender-dependency-graph).
 
-**Ender is not a JavaScript library**.<br/>
-It's not a jQuery replacement. It's not even a static asset. It's a tool for making the consumption of front-end javascript packages dead simple and incredibly powerful.
+-------------------------
 
-![Ender](http://f.cl.ly/items/1W0P3I3D3m3U0e1j2h1c/Screen%20shot%202011-05-09%20at%2011.31.42%20AM.png)
+## Contributing
 
-## WHY?
+Contributions are more than welcome! Just fork and submit a GitHub pull request! If you have changes that need to be synchronized across the various Ender CLI repositories then please make that clear in your pull requests.
 
-In the browser - **small, loosely coupled modules are the future and large, tightly-bound monolithic libraries are the past!**
+### Tests
 
-Ender capitalizes on this by offering a unique way to bring together the exciting work happening in javascript packages and allows you to mix, match, and customize your own build, suited to your individual needs, without all the extra cruft that comes with larger libraries.
+Ender Installer uses [Buster](http://busterjs.org) for unit testing. You'll get it (and a bazillion unnecessary dependencies) when you `npm install` in your cloned local repository. Simply run `npm test` to run the test suite.
 
-With Ender, if one library goes bad or unmaintained, it can be replaced with another. Need a specific package version? No problem! Does your package have dependencies? Let us handle that for you too!
+## Licence
 
-## MORE INFO
-
-For more information checkout [http://ender.no.de](http://ender.no.de)
+*Ender Installer* is Copyright (c) 2012 [@rvagg](https://github.com/rvagg), [@ded](https://github.com/ded), [@fat](https://github.com/fat) and other contributors. It is licenced under the MIT licence. All rights not explicitly granted in the MIT license are reserved. See the included LICENSE file for more details.

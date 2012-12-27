@@ -25,20 +25,22 @@
 
 var testCase       = require('buster').testCase
   , repository     = require('ender-repository')
-  , install        = require('../../lib/install')
-  , util           = require('../../lib/util')
-  , installUtil    = require('../../lib/install-util')
-  , DependencyTree = require('../../lib/dependency-tree')
+  , requireSubvert = require('require-subvert')(__dirname)
+  , installUtil    = require('../lib/install-util')
+  , install
+
+require('ender-dependency-graph')
 
 testCase('Install', {
     'setUp': function () {
-      this.mockUtil           = this.mock(util)
-      this.mockInstallUtil    = this.mock(installUtil)
-      this.mockRepository     = this.mock(repository)
-      this.mockDependencyTree = this.mock(DependencyTree)
+      this.mockInstallUtil     = this.mock(installUtil)
+      this.mockRepository      = this.mock(repository)
+      this.dependencyGraphStub = this.stub()
+      requireSubvert.subvert('ender-dependency-graph', this.dependencyGraphStub)
+      install                  = requireSubvert.require('../')
 
-      this.optionsArg         = { options: 1 }
-      this.packagesArg        = [ 'yee', 'haw' ] // length 2
+      this.optionsArg          = { options: 1 }
+      this.packagesArg         = [ 'yee', 'haw' ] // length 2
 
       //this.mockUtil.expects('mkdir').once().withArgs('node_modules').callsArg(1)
       // done by mkdirp now, probably should be mocked out...
@@ -54,12 +56,17 @@ testCase('Install', {
       }.bind(this)
 
       this.expectGenerate = function (dependencyTreeArg) {
-        this.mockDependencyTree
-          .expects('generate')
-          .withArgs(this.optionsArg, this.packagesArg)
-          .once()
-          .callsArgWith(2, null, dependencyTreeArg)
+        this.dependencyGraphStub.callsArgWith(2, null, dependencyTreeArg)
       }.bind(this)
+
+      this.verifyGenerate = function (calls) {
+        assert.equals(this.dependencyGraphStub.callCount, calls)
+        for (var i = 0; i < calls; i++) {
+          assert.equals(this.dependencyGraphStub.getCall(i).args.length, 3)
+          assert.equals(this.dependencyGraphStub.getCall(i).args[0], this.optionsArg)
+          assert.equals(this.dependencyGraphStub.getCall(i).args[1], this.packagesArg)
+        }
+      }
 
       this.expectFindMissingDependencies = function (dependencyTreeArg, missingDependenciesArg) {
         this.mockInstallUtil
@@ -86,6 +93,10 @@ testCase('Install', {
       }
     }
 
+  , tearDown: function () {
+      requireSubvert.cleanUp()
+    }
+
   , 'test basic one package install, already available': function (done) {
       var filteredPackagesArg        = { filteredPackages: 1, length: this.packagesArg.length }
         , filteredMissingPackagesArg = [] // length 0, nothing to install
@@ -99,12 +110,13 @@ testCase('Install', {
       this.expectFindPathDependencies(dependencyTreeArg, pathDependenciesArg)
       this.expectFilterPackagesWithoutCwd(missingDependenciesArg.concat(pathDependenciesArg), filteredMissingPackagesArg)
 
-      install.installPackages(this.optionsArg, this.packagesArg, function (err, results, dependencyTree) {
+      install(this.optionsArg, this.packagesArg, function (err, results, dependencyTree) {
         refute(err)
         assert.equals(results, [])
         assert.same(dependencyTree, dependencyTreeArg)
+        this.verifyGenerate(1)
         done()
-      })
+      }.bind(this))
     }
 
   , 'test one package install, not available': function (done) {
@@ -131,12 +143,13 @@ testCase('Install', {
       this.expectFindPathDependencies(dependencyTreeArg2, pathDependenciesArg2)
       this.expectFilterPackagesWithoutCwd(missingDependenciesArg2.concat(pathDependenciesArg2), filteredMissingPackagesArg2)
 
-      install.installPackages(this.optionsArg, this.packagesArg, function (err, results, dependencyTree) {
+      install(this.optionsArg, this.packagesArg, function (err, results, dependencyTree) {
         refute(err)
         assert.equals(results, [ resultArg ])
         assert.same(dependencyTree, dependencyTreeArg2)
+        this.verifyGenerate(2)
         done()
-      })
+      }.bind(this))
     }
 
   , 'test multi package install, multi install loops required': function (done) {
@@ -185,12 +198,13 @@ testCase('Install', {
       this.expectFindPathDependencies(dependencyTreeArg4, pathDependenciesArg4)
       this.expectFilterPackagesWithoutCwd(missingDependenciesArg4.concat(pathDependenciesArg4), filteredMissingPackagesArg4)
 
-      install.installPackages(this.optionsArg, this.packagesArg, function (err, results, dependencyTree) {
+      install(this.optionsArg, this.packagesArg, function (err, results, dependencyTree) {
         refute(err)
         assert.equals(results, [ resultArg, resultArg2, resultArg3 ])
         assert.same(dependencyTree, dependencyTreeArg4)
+        this.verifyGenerate(4)
         done()
-      })
+      }.bind(this))
     }
 
   , 'test multi package install, should only install the same package once': function (done) {
@@ -242,12 +256,13 @@ testCase('Install', {
       this.expectFindPathDependencies(dependencyTreeArg4, pathDependenciesArg4)
       this.expectFilterPackagesWithoutCwd(missingDependenciesArg4.concat(pathDependenciesArg4), filteredMissingPackagesArg4)
 
-      install.installPackages(this.optionsArg, this.packagesArg, function (err, results, dependencyTree) {
+      install(this.optionsArg, this.packagesArg, function (err, results, dependencyTree) {
         refute(err)
         assert.equals(results, [ resultArg, resultArg2, resultArg3 ])
         assert.same(dependencyTree, dependencyTreeArg4)
+        this.verifyGenerate(4)
         done()
-      })
+      }.bind(this))
     }
 
 
@@ -281,12 +296,13 @@ testCase('Install', {
       this.expectFindPathDependencies(dependencyTreeArg2, pathDependenciesArg2)
       this.expectFilterPackagesWithoutCwd(missingDependenciesArg2.concat(pathDependenciesArg2), filteredMissingPackagesArg2)
 
-      install.installPackages(this.optionsArg, this.packagesArg, function (err, results, dependencyTree) {
+      install(this.optionsArg, this.packagesArg, function (err, results, dependencyTree) {
         refute(err)
         assert.equals(results, [ resultArg, resultArg2 ])
         assert.same(dependencyTree, dependencyTreeArg2)
+        this.verifyGenerate(2)
         done()
-      })
+      }.bind(this))
     }
 
 })
