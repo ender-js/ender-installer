@@ -23,9 +23,10 @@
  */
 
 
-var buster          = require('buster')
+var buster         = require('bustermove')
+  , assert         = require('referee').assert
+  , refute         = require('referee').refute
   , path            = require('path')
-  , assert          = buster.assert
   , DependencyGraph = require('ender-dependency-graph')
   , installUtil     = require('../lib/install-util')
 

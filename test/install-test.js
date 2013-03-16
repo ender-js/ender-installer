@@ -23,7 +23,9 @@
  */
 
 
-var testCase       = require('buster').testCase
+var buster         = require('bustermove')
+  , assert         = require('referee').assert
+  , refute         = require('referee').refute
   , repository     = require('ender-repository')
   , requireSubvert = require('require-subvert')(__dirname)
   , installUtil    = require('../lib/install-util')
@@ -31,7 +33,7 @@ var testCase       = require('buster').testCase
 
 require('ender-dependency-graph')
 
-testCase('Install', {
+buster.testCase('Install', {
     'setUp': function () {
       this.mockInstallUtil     = this.mock(installUtil)
       this.mockRepository      = this.mock(repository)

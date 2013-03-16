@@ -18,11 +18,13 @@
       , "async"            : "~0.1.22"
     }
   , "devDependencies" : {
-        "buster"           : "~0.6.12"
+        "bustermove"       : "*"
+      , "tap"              : "*"
+      , "referee"          : "*"
       , "require-subvert"  : "~0.0.1"
     }
   , "scripts"         : {
-        "test"             : "./node_modules/.bin/buster-test"
+        "test"             : "tap test/*-test.js"
     }
   , "bin"             : {
         "ender-installer"  : "./bin/ender-installer.js"
