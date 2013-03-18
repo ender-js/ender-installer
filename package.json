@@ -1,7 +1,7 @@
 {
     "name"            : "ender-installer"
   , "description"     : "Package installer component of the Ender CLI"
-  , "version"         : "0.0.0"
+  , "version"         : "0.0.1"
   , "authors"         : [
         "Rod Vagg @rvagg <rod@vagg.org> (https://github.com/rvagg)"
       , "Dustin Diaz @ded <dustin@obvious.com> (https://github.com/ded)"
@@ -11,9 +11,9 @@
   , "main"            : "./lib/index.js"
   , "homepage"        : "https://ender.jit.su"
   , "dependencies"    : {
-        "ender-repository"       : "~0.0.2"
-      , "ender-dependency-graph" : "~0.0.1"
-      , "ender-args-parser"      : "~0.0.1"
+        "ender-repository"       : "~0.0.4"
+      , "ender-dependency-graph" : "~0.0.2"
+      , "ender-args-parser"      : "~0.0.2"
 
       , "async"            : "~0.1.22"
     }
