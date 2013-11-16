@@ -12,8 +12,8 @@
   , "main"            : "./lib/index.js"
   , "homepage"        : "https://ender.jit.su"
   , "dependencies"    : {
-        "ender-package"          : "0.0.5-dev"
-      , "ender-repository"       : "0.0.5-dev"
+        "ender-package"          : "ender-js/ender-package#beta"
+      , "ender-repository"       : "ender-js/ender-repository#beta"
 
       , "async"            : "~0.1.22"
       , "errno"            : "~0.0.3"
