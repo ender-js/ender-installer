@@ -5,7 +5,7 @@ var enderInstaller  = require('../')
   , enderPackage    = require('ender-package')
   , options         = argsParser.parseClean(['build'].concat(process.argv.slice(2)))
   , refresh         = options['force-install'] || options['_force-install']
-  
+
 if (!options.packages.length) {
   console.error('Usage: ender-installer <package1>[ <package2>[ <package3> ]]')
   return process.exit(-1)

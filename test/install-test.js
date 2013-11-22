@@ -42,7 +42,7 @@ buster.testCase('Install', {
         version = version || '0.0.0'
         dependencies = dependencies || []
         relativeRoot = relativeRoot || path.join('node_modules', name)
-        
+
         return {
             root: path.resolve(relativeRoot)
           , id: name + '@' + version
@@ -54,15 +54,15 @@ buster.testCase('Install', {
           , unload: function () {}
         }
       }
-      
+
       this.createStubs = function (local, repo) {
         this.stub(repository, 'setup').callsArg(0)
         this.stub(repository, 'packup')
-        
+
         this.stub(repository, 'install', function (ids, callback) {
           setImmediate(function () {
             var basePackageIds = [], installedRoots = []
-            
+
             ids.forEach(function (id) {
               var pkg = repo.filter(function (pkg) { return pkg.id == id || pkg.root == path.resolve(id) })[0]
               if (!pkg) return callback("Not found!")
@@ -71,23 +71,23 @@ buster.testCase('Install', {
               basePackageIds.push(pkg.id)
               installedRoots.push(pkg.root)
             })
-          
+
             callback(null, basePackageIds, installedRoots)
           })
         })
-        
-        
+
+
         // It would be simpler to stub loadPackage, but findPackage holds a local reference,
         //  so we have to move up the food chain and stub LocalPackage.create
         this.stub(enderPackage.LocalPackage, 'create', function (root) {
           root = path.resolve(root)
-          
+
           var pkg = local.filter(function (pkg) { return pkg.root == root })[0]
             , nullPkg = {
                   loadDescriptor: function (cb) { cb('Bad package') }
                 , unload: function () {}
               }
-          
+
           return pkg || nullPkg
         })
       }.bind(this)
@@ -109,7 +109,7 @@ buster.testCase('Install', {
         , refresh = false
 
       this.createStubs(localPackages, repoPackages)
-      
+
       install(ids, refresh, function (err, basePackageIds, installedIds) {
         refute(err)
         assert.equals(basePackageIds, [ 'foo@0.0.1' ])
@@ -127,7 +127,7 @@ buster.testCase('Install', {
         , refresh = false
 
       this.createStubs(localPackages, repoPackages)
-    
+
       install(ids, refresh, function (err, basePackageIds, installedIds) {
         refute(err)
         assert.equals(basePackageIds, [ 'foo@0.0.1' ])
@@ -147,7 +147,7 @@ buster.testCase('Install', {
         , refresh = false
 
       this.createStubs(localPackages, repoPackages)
-  
+
       install(ids, refresh, function (err, basePackageIds, installedIds) {
         refute(err)
         assert.equals(basePackageIds, [ 'foo@1.2.3' ])
@@ -189,7 +189,7 @@ buster.testCase('Install', {
         , refresh = false
 
       this.createStubs(localPackages, repoPackages)
-  
+
       install(ids, refresh, function (err, basePackageIds, installedIds) {
         refute(err)
         assert.equals(basePackageIds, [ 'foo@0.0.1' ])
