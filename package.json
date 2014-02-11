@@ -15,7 +15,7 @@
         "ender-package"          : "ender-js/ender-package#beta"
       , "ender-repository"       : "ender-js/ender-repository#beta"
 
-      , "async"            : "~0.1.22"
+      , "async"            : "~0.2.10"
       , "errno"            : "~0.0.3"
     }
   , "devDependencies" : {
